@@ -1,0 +1,59 @@
+- hosts: localhost
+  gather_facts: no
+  become: true
+  become_method: sudo
+
+  vars:
+    - BACKEND_IP: "172.17.0.3"
+    - BACKEND_PORT: "80"
+  tasks:
+    - name: "checking haproxy istalled ?"
+      command: rpm -q haproxy
+      ignore_errors: yes
+      register: haproxy_installed
+
+    - name: "Installing haproxy"
+      command: yum install haproxy -y
+      when: haproxy_installed.rc !=0
+
+    - name: "check the current backend ip and port, if it is there don't touch"
+      shell: "cat /etc/haproxy/haproxy.cfg | grep '{{ BACKEND_IP }}:{{ BACKEND_PORT }}'"
+      register: isneedchange
+      ignore_errors: yes
+
+    - name: "Configuration of the haproxy"
+      command: sed -i  's/app1.*/app1 {{BACKEND_IP}}:{{BACKEND_PORT}} check/g' /etc/haproxy/haproxy.cfg
+      when: isneedchange.rc != 0
+
+    - name: "Starting the haproxy service"
+      shell: systemctl start haproxy
+      when: isneedchange.rc != 0
+	  
+#______________
+
+
+  vars:
+    - BACKEND_IP: "172.17.0.3"
+    - BACKEND_PORT: "80"
+  tasks:
+    - name: "checking haproxy istalled ?"
+      command: pbrun rpm -q haproxy
+      ignore_errors: yes
+      register: haproxy_installed
+
+    - name: "Installing haproxy"
+      command: pbrun yum install haproxy -y
+      when: haproxy_installed.rc !=0
+
+    - name: "check the current backend ip and port, if it is there don't touch"
+      shell: "pbrun cat /etc/haproxy/haproxy.cfg | grep '{{ BACKEND_IP }}:{{ BACKEND_PORT }}'"
+      register: isneedchange
+      ignore_errors: yes
+
+    - name: "Configuration of the haproxy"
+      command: pbrun sed -i  's/app1.*/app1 {{BACKEND_IP}}:{{BACKEND_PORT}} check/g' /etc/haproxy/haproxy.cfg
+      when: isneedchange.rc != 0
+
+    - name: "Starting the haproxy service"
+      shell: pbrun systemctl start haproxy
+      when: isneedchange.rc != 0
