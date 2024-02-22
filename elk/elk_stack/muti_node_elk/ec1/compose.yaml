@@ -1,0 +1,18 @@
+version: '3.6'
+services:
+  Logstash:
+    image: logstash:7.16.2
+    container_name: logstash-ec1
+    restart: always
+    volumes:
+      - /home/niket/elk_stack/muti_node_elk/ec1/logstash:/tmp  # replace "/home/kali/ws/elk with log directory "
+    command: logstash -f /tmp/logstash_ec-1.conf
+    ports:
+      - '9600:9600'
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+      INPUT_PATH: "/tmp/rubikxv3_ec-1.log"
+      OUTPUT_ELASTICSEARCH_HOST: "192.168.29.161"
+      OUTPUT_ELASTICSEARCH_PORT: "9200"
+      OUTPUT_INDEX_PREFIX: "ec-1"
+
